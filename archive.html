@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>バックナンバー ｜ 日刊 こども川崎市新聞</title>
+    <meta name="description" content="日刊こども川崎市新聞の過去の記事一覧です。" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700;900&family=M+PLUS+Rounded+1c:wght@700;800&display=swap"
+        rel="stylesheet" />
+    <link rel="stylesheet" href="/src/style.css" />
+</head>
+
+<body>
+    <!-- ヘッダー -->
+    <header class="site-header">
+        <div class="header-inner">
+            <div class="header-brand">
+                <span class="header-icon">📰</span>
+                <div>
+                    <h1 class="header-title">日刊 こども川崎市新聞</h1>
+                    <p class="header-subtitle">川崎のことを知って、考えて、話そう！</p>
+                </div>
+            </div>
+            <nav class="header-nav">
+                <a href="/" class="nav-link">きょうの記事</a>
+                <a href="/archive.html" class="nav-link active">バックナンバー</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <h2 class="page-title">📚 バックナンバー</h2>
+
+        <div id="loading" class="loading-state">
+            <div class="loading-spinner"></div>
+            <p>記事一覧を読み込んでいます…</p>
+        </div>
+
+        <div id="no-articles" class="empty-state" hidden>
+            <span class="empty-icon">📭</span>
+            <h2>まだ記事がありません</h2>
+        </div>
+
+        <div id="archive-list" class="archive-list" hidden></div>
+    </main>
+
+    <footer class="site-footer">
+        <p>© 2026 日刊 こども川崎市新聞 ｜ 川崎市立高校附属中学 適性検査対策</p>
+    </footer>
+
+    <script type="module" src="/src/archive.js"></script>
+</body>
+
+</html>

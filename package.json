@@ -1,0 +1,20 @@
+{
+  "name": "kodomo-kawasaki-news",
+  "version": "1.0.0",
+  "description": "日刊 こども川崎市新聞 - 川崎市データ読み取り問題対策",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "generate": "node scripts/generate.mjs"
+  },
+  "dependencies": {
+    "@google/generative-ai": "^0.24.0",
+    "cheerio": "^1.0.0",
+    "mermaid": "^11.4.0"
+  },
+  "devDependencies": {
+    "vite": "^6.1.0"
+  }
+}

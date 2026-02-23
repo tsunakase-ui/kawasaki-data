@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>日刊 こども川崎市新聞</title>
+  <meta name="description" content="川崎市のデータや社会課題を、小学生にもわかりやすく毎日お届け。川崎市立高校附属中学 適性検査対策にも。" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700;900&family=M+PLUS+Rounded+1c:wght@700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/src/style.css" />
+</head>
+<body>
+  <!-- ヘッダー -->
+  <header class="site-header">
+    <div class="header-inner">
+      <div class="header-brand">
+        <span class="header-icon">📰</span>
+        <div>
+          <h1 class="header-title">日刊 こども川崎市新聞</h1>
+          <p class="header-subtitle">川崎のことを知って、考えて、話そう！</p>
+        </div>
+      </div>
+      <nav class="header-nav">
+        <a href="/" class="nav-link active">きょうの記事</a>
+        <a href="/archive.html" class="nav-link">バックナンバー</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- メインコンテンツ -->
+  <main class="main-content">
+    <!-- ローディング -->
+    <div id="loading" class="loading-state">
+      <div class="loading-spinner"></div>
+      <p>きょうの記事を読み込んでいます…</p>
+    </div>
+
+    <!-- 記事なし -->
+    <div id="no-article" class="empty-state" hidden>
+      <span class="empty-icon">🏗️</span>
+      <h2>まだ記事がありません</h2>
+      <p>最初の記事が配信されるまでお待ちください！</p>
+    </div>
+
+    <!-- 記事コンテンツ -->
+    <article id="article" hidden>
+      <!-- 日付とカテゴリ -->
+      <div class="article-meta">
+        <span id="article-date" class="meta-date"></span>
+        <span id="article-category" class="meta-category"></span>
+      </div>
+
+      <!-- ヘッドライン -->
+      <h2 id="article-headline" class="article-headline"></h2>
+
+      <!-- セクション1: 今日のテーマ解説 -->
+      <section class="section section-top-story">
+        <div class="section-header">
+          <span class="section-icon">💡</span>
+          <h3 class="section-title">今日のテーマ解説</h3>
+        </div>
+        <div class="section-body">
+          <blockquote id="top-story-conclusion" class="conclusion-box"></blockquote>
+          <div id="top-story-body" class="story-body"></div>
+          <div id="top-story-keypoint" class="key-point"></div>
+        </div>
+      </section>
+
+      <!-- セクション2: 概念のつながりマップ -->
+      <section class="section section-concept-map">
+        <div class="section-header">
+          <span class="section-icon">🗺️</span>
+          <h3 class="section-title">概念のつながりマップ</h3>
+        </div>
+        <div class="section-body">
+          <div id="concept-map-diagram" class="mermaid-container"></div>
+          <p id="concept-map-description" class="map-description"></p>
+        </div>
+      </section>
+
+      <!-- セクション3: 知っておきたいデータ -->
+      <section class="section section-data">
+        <div class="section-header">
+          <span class="section-icon">📊</span>
+          <h3 class="section-title">知っておきたいデータと傾向</h3>
+        </div>
+        <div class="section-body">
+          <div id="data-facts" class="data-facts-grid"></div>
+          <p id="data-trend" class="data-trend"></p>
+        </div>
+      </section>
+
+      <!-- セクション4: 会話 -->
+      <section class="section section-dialogue">
+        <div class="section-header">
+          <span class="section-icon">💬</span>
+          <h3 class="section-title">テーマに対する小学生の会話</h3>
+        </div>
+        <div id="dialogue-container" class="dialogue-container"></div>
+      </section>
+
+      <!-- セクション5: クイズ -->
+      <section class="section section-quiz">
+        <div class="section-header">
+          <span class="section-icon">✏️</span>
+          <h3 class="section-title">チャレンジ問題</h3>
+        </div>
+        <div class="section-body">
+          <p id="quiz-question" class="quiz-question"></p>
+          <div id="quiz-choices" class="quiz-choices"></div>
+          <div id="quiz-result" class="quiz-result" hidden>
+            <div id="quiz-result-icon" class="quiz-result-icon"></div>
+            <p id="quiz-result-text" class="quiz-result-text"></p>
+            <div id="quiz-explanation" class="quiz-explanation"></div>
+          </div>
+        </div>
+      </section>
+    </article>
+  </main>
+
+  <!-- フッター -->
+  <footer class="site-footer">
+    <p>© 2026 日刊 こども川崎市新聞 ｜ 川崎市立高校附属中学 適性検査対策</p>
+  </footer>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
