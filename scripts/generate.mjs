@@ -6,6 +6,10 @@
  * Usage:
  *   GEMINI_API_KEY=xxx node scripts/generate.mjs
  *   GEMINI_API_KEY=xxx node scripts/generate.mjs --date 2026-02-24
+ *
+ * 環境変数:
+ *   GEMINI_API_KEY   - Gemini API キー（必須）
+ *   UNSPLASH_ACCESS_KEY - Unsplash API キー（任意、なければ画像なし）
  */
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs';
 import { join, dirname } from 'path';
@@ -56,6 +60,46 @@ function saveArticle(dateStr, article) {
     const path = join(ARTICLES_DIR, `${dateStr}.json`);
     writeFileSync(path, JSON.stringify(article, null, 2), 'utf-8');
     return path;
+}
+
+// ===== Unsplash API =====
+
+async function fetchUnsplashImage(query) {
+    const accessKey = process.env.UNSPLASH_ACCESS_KEY;
+    if (!accessKey) {
+        console.log('📷 UNSPLASH_ACCESS_KEY 未設定のため画像取得をスキップ');
+        return null;
+    }
+
+    try {
+        const url = `https://api.unsplash.com/search/photos?query=${encodeURIComponent(query)}&per_page=1&orientation=landscape`;
+        const res = await fetch(url, {
+            headers: { 'Authorization': `Client-ID ${accessKey}` },
+        });
+
+        if (!res.ok) {
+            console.warn(`  ⚠ Unsplash API エラー: ${res.status}`);
+            return null;
+        }
+
+        const data = await res.json();
+        if (data.results && data.results.length > 0) {
+            const photo = data.results[0];
+            console.log(`📷 画像取得成功: ${photo.urls.regular.slice(0, 60)}...`);
+            return {
+                url: photo.urls.regular,
+                alt: photo.alt_description || query,
+                credit: photo.user.name,
+                creditUrl: photo.user.links.html,
+            };
+        }
+
+        console.log('📷 画像が見つかりませんでした');
+        return null;
+    } catch (err) {
+        console.warn(`  ⚠ Unsplash 取得失敗: ${err.message}`);
+        return null;
+    }
 }
 
 // ===== メイン処理 =====
@@ -128,11 +172,21 @@ async function main() {
 
             const generated = JSON.parse(jsonStr);
 
+            // Unsplash で画像取得
+            let heroImage = null;
+            const imageQuery = generated.theme?.imageQuery;
+            if (imageQuery) {
+                heroImage = await fetchUnsplashImage(imageQuery);
+            }
+
             // 完全な記事オブジェクトを構築
             article = {
                 date: dateStr,
                 theme: generated.theme,
                 sections: generated.sections,
+                sources: generated.sources || [],
+                glossary: generated.glossary || [],
+                heroImage: heroImage,
             };
 
             console.log(`✅ 記事生成成功: "${article.theme.headline}"`);

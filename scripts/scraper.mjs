@@ -52,6 +52,14 @@ async function fetchPage(url, timeout = 10000) {
 }
 
 /**
+ * HTMLからページタイトルを抽出
+ */
+function extractTitle(html) {
+    const $ = cheerio.load(html);
+    return $('title').text().trim() || $('h1').first().text().trim() || '';
+}
+
+/**
  * HTMLからテキストコンテンツを抽出
  */
 function extractText(html, maxChars = 2000) {
@@ -66,6 +74,38 @@ function extractText(html, maxChars = 2000) {
         .trim();
 
     return text.slice(0, maxChars);
+}
+
+/**
+ * 検索結果ページから個別記事URLを抽出
+ */
+function extractArticleLinks(html, baseUrl) {
+    const $ = cheerio.load(html);
+    const links = [];
+
+    $('a[href]').each((_, el) => {
+        const href = $(el).attr('href');
+        const text = $(el).text().trim();
+        if (!href || !text || text.length < 5) return;
+
+        // 絶対URLに変換
+        let fullUrl;
+        try {
+            fullUrl = new URL(href, baseUrl).href;
+        } catch {
+            return;
+        }
+
+        // 検索結果やカテゴリページでなく、記事っぽいURLを収集
+        if (fullUrl.includes('search') || fullUrl.includes('category')) return;
+        if (fullUrl === baseUrl) return;
+
+        links.push({ title: text.slice(0, 80), url: fullUrl });
+    });
+
+    // 重複除去して最大5件
+    const unique = [...new Map(links.map(l => [l.url, l])).values()];
+    return unique.slice(0, 5);
 }
 
 /**
@@ -84,14 +124,19 @@ export async function scrapeForTheme(topic, category) {
             const url = source.searchUrl(searchQuery);
             const html = await fetchPage(url);
             if (html) {
+                const title = extractTitle(html);
                 const text = extractText(html);
+                const articleLinks = extractArticleLinks(html, url);
+
                 if (text.length > 50) {
                     results.push({
                         source: source.name,
                         url: url,
+                        title: title,
                         content: text,
+                        relatedLinks: articleLinks,
                     });
-                    console.log(`  ✅ ${text.length}文字取得`);
+                    console.log(`  ✅ ${text.length}文字取得 (関連リンク: ${articleLinks.length}件)`);
                 } else {
                     console.log(`  ⏭ テキスト不足 (${text.length}文字)`);
                 }

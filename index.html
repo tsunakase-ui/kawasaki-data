@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -7,9 +8,12 @@
   <meta name="description" content="川崎市のデータや社会課題を、小学生にもわかりやすく毎日お届け。川崎市立高校附属中学 適性検査対策にも。" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700;900&family=M+PLUS+Rounded+1c:wght@700;800&display=swap" rel="stylesheet" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700;900&family=M+PLUS+Rounded+1c:wght@700;800&display=swap"
+    rel="stylesheet" />
   <link rel="stylesheet" href="/src/style.css" />
 </head>
+
 <body>
   <!-- ヘッダー -->
   <header class="site-header">
@@ -50,6 +54,9 @@
         <span id="article-date" class="meta-date"></span>
         <span id="article-category" class="meta-category"></span>
       </div>
+
+      <!-- ヒーロー画像 -->
+      <div id="hero-image" class="hero-image-container" hidden></div>
 
       <!-- ヘッドライン -->
       <h2 id="article-headline" class="article-headline"></h2>
@@ -116,6 +123,24 @@
           </div>
         </div>
       </section>
+
+      <!-- セクション6: ことば解説 -->
+      <section id="glossary-section" class="section section-glossary" hidden>
+        <div class="section-header">
+          <span class="section-icon">📖</span>
+          <h3 class="section-title">ことば解説</h3>
+        </div>
+        <div id="glossary-list" class="glossary-list"></div>
+      </section>
+
+      <!-- セクション7: 出典・参考リンク -->
+      <section id="sources-section" class="section section-sources" hidden>
+        <div class="section-header">
+          <span class="section-icon">📎</span>
+          <h3 class="section-title">出典・参考リンク</h3>
+        </div>
+        <ul id="sources-list" class="sources-list"></ul>
+      </section>
     </article>
   </main>
 
@@ -124,6 +149,8 @@
     <p>© 2026 日刊 こども川崎市新聞 ｜ 川崎市立高校附属中学 適性検査対策</p>
   </footer>
 
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
   <script type="module" src="/src/main.js"></script>
 </body>
+
 </html>

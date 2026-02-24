@@ -52,6 +52,8 @@
                 <span id="article-category" class="meta-category"></span>
             </div>
 
+            <div id="hero-image" class="hero-image-container" hidden></div>
+
             <h2 id="article-headline" class="article-headline"></h2>
 
             <section class="section section-top-story">
@@ -111,6 +113,24 @@
                     </div>
                 </div>
             </section>
+
+            <!-- セクション6: ことば解説 -->
+            <section id="glossary-section" class="section section-glossary" hidden>
+                <div class="section-header">
+                    <span class="section-icon">📖</span>
+                    <h3 class="section-title">ことば解説</h3>
+                </div>
+                <div id="glossary-list" class="glossary-list"></div>
+            </section>
+
+            <!-- セクション7: 出典・参考リンク -->
+            <section id="sources-section" class="section section-sources" hidden>
+                <div class="section-header">
+                    <span class="section-icon">📎</span>
+                    <h3 class="section-title">出典・参考リンク</h3>
+                </div>
+                <ul id="sources-list" class="sources-list"></ul>
+            </section>
         </article>
     </main>
 
@@ -118,6 +138,7 @@
         <p>© 2026 日刊 こども川崎市新聞 ｜ 川崎市立高校附属中学 適性検査対策</p>
     </footer>
 
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
     <script type="module" src="/src/article.js"></script>
 </body>
 
