@@ -19,7 +19,11 @@ async function init() {
         }
 
         archiveList.hidden = false;
-        archiveList.innerHTML = index.articles
+
+        // 日付の降順でソート（新しい記事が上に来る）
+        const sorted = [...index.articles].sort((a, b) => b.date.localeCompare(a.date));
+
+        archiveList.innerHTML = sorted
             .map(article => `
         <a href="/article.html?date=${article.date}" class="archive-card">
           <div class="archive-card-date">${formatDate(article.date)}</div>

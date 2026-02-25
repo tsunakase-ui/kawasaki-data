@@ -208,13 +208,15 @@ async function main() {
     const savedPath = saveArticle(dateStr, article);
     console.log(`💾 記事保存: ${savedPath}`);
 
-    // 7. インデックス更新（新しい記事を先頭に）
-    index.articles.unshift({
+    // 7. インデックス更新（重複除去 + 日付降順ソート）
+    index.articles = index.articles.filter(a => a.date !== dateStr);
+    index.articles.push({
         date: dateStr,
         headline: article.theme.headline,
         category: article.theme.category,
         topic: article.theme.topic,
     });
+    index.articles.sort((a, b) => b.date.localeCompare(a.date));
     saveIndex(index);
     console.log('📋 インデックス更新完了');
 
