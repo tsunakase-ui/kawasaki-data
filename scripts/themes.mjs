@@ -62,8 +62,10 @@ export const THEMES = [
 
 /**
  * 過去の出題テーマを避けてランダムにテーマを選定
+ * @param {string[]} pastTopics - 過去のトピック名リスト
+ * @param {Array<{category: string}>} pastArticles - 過去の記事（日付降順）
  */
-export function selectTheme(pastTopics = []) {
+export function selectTheme(pastTopics = [], pastArticles = []) {
     // 全トピックをフラット化
     const allTopics = THEMES.flatMap(theme =>
         theme.topics.map(topic => ({
@@ -78,6 +80,21 @@ export function selectTheme(pastTopics = []) {
     // すべて出題済みならリセット
     const pool = available.length > 0 ? available : allTopics;
 
+    // 直近の記事と同じカテゴリを除外（連続出題防止）
+    const recentCategories = [...new Set(
+        pastArticles.slice(0, 2).map(a => a.category)
+    )];
+    let filtered = pool.filter(t => !recentCategories.includes(t.category));
+
+    // 全除外された場合は直近1日分のみ除外にフォールバック
+    if (filtered.length === 0 && pastArticles.length > 0) {
+        const lastCategory = pastArticles[0].category;
+        filtered = pool.filter(t => t.category !== lastCategory);
+    }
+
+    // それでも空なら元のプールを使う
+    const categoryFiltered = filtered.length > 0 ? filtered : pool;
+
     // カテゴリ偏りを防ぐ: カテゴリごとの出題回数を計算
     const categoryCounts = {};
     for (const t of pastTopics) {
@@ -91,10 +108,10 @@ export function selectTheme(pastTopics = []) {
     const minCount = Math.min(
         ...THEMES.map(t => categoryCounts[t.category] || 0)
     );
-    const underrepresented = pool.filter(
+    const underrepresented = categoryFiltered.filter(
         t => (categoryCounts[t.category] || 0) === minCount
     );
 
-    const finalPool = underrepresented.length > 0 ? underrepresented : pool;
+    const finalPool = underrepresented.length > 0 ? underrepresented : categoryFiltered;
     return finalPool[Math.floor(Math.random() * finalPool.length)];
 }

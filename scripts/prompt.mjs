@@ -25,10 +25,17 @@ export function getSystemPrompt() {
 
 /**
  * 記事生成リクエストのプロンプト
+ * @param {Object} theme - テーマ情報
+ * @param {Array} scrapedData - スクレイピング結果
+ * @param {Array<{date: string, headline: string, topic: string}>} pastArticles - 過去の記事一覧
  */
-export function getGenerationPrompt(theme, scrapedData) {
+export function getGenerationPrompt(theme, scrapedData, pastArticles = []) {
   const scrapedContext = scrapedData.length > 0
     ? `\n\n## 参考情報（スクレイピング結果）\n${scrapedData.map(d => `### ${d.source} (${d.url})\nページタイトル: ${d.title || '不明'}\n${d.content}`).join('\n\n')}`
+    : '';
+
+  const pastContext = pastArticles.length > 0
+    ? `\n\n## 過去の記事（以下と内容・切り口が被らないようにしてください）\n${pastArticles.slice(0, 7).map(a => `- ${a.date}: ${a.headline}（${a.topic}）`).join('\n')}`
     : '';
 
   return `以下のテーマについて「日刊 こども川崎市新聞」の記事を生成してください。
@@ -36,7 +43,7 @@ export function getGenerationPrompt(theme, scrapedData) {
 ## テーマ
 - カテゴリ: ${theme.category}
 - トピック: ${theme.topic}
-${scrapedContext}
+${scrapedContext}${pastContext}
 
 ## 出力形式
 

@@ -128,8 +128,9 @@ async function main() {
 
     // 3. テーマ選定
     const index = loadIndex();
-    const pastTopics = index.articles.slice(0, 30).map(a => a.topic);
-    const theme = selectTheme(pastTopics);
+    const pastArticles = index.articles.slice(0, 30);
+    const pastTopics = pastArticles.map(a => a.topic);
+    const theme = selectTheme(pastTopics, pastArticles);
     console.log(`🎯 テーマ: ${theme.category} > ${theme.topic}`);
 
     // 4. スクレイピング
@@ -149,7 +150,7 @@ async function main() {
         },
     });
 
-    const prompt = getGenerationPrompt(theme, scrapedData);
+    const prompt = getGenerationPrompt(theme, scrapedData, pastArticles);
 
     let article;
     let retries = 3;
