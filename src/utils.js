@@ -2,14 +2,9 @@
  * 共通ユーティリティ
  */
 
-// ===== EmailJS 設定 =====
-// EmailJS アカウント設定後に以下を更新してください
-const EMAILJS_CONFIG = {
-    serviceId: '',    // EmailJS Service ID
-    templateId: '',   // EmailJS Template ID
-    publicKey: '',    // EmailJS Public Key
-    parentEmail: 'tsuna.kase@gmail.com',
-};
+// ===== GAS WebHook 設定 =====
+// 発行された Webアプリ の URL をここに設定してください
+const GAS_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbzv5vH7m-eeFiiZbuZVEPaiInW-VZGLgwWyRz-W70Tit5NhL-epO9yTKIv_s2lAkCmQ/exec';
 
 /**
  * 日付を「2026年2月24日（月）」形式にフォーマット
@@ -100,35 +95,41 @@ export async function renderMermaid(containerId, mermaidCode) {
 }
 
 /**
- * メール送信 (EmailJS)
+ * メール送信 (GAS Webアプリ)
  */
 async function sendQuizNotification(headline, date) {
-    if (!EMAILJS_CONFIG.serviceId || !EMAILJS_CONFIG.publicKey) {
-        console.log('📧 EmailJS 未設定のためメール送信スキップ');
+    if (!GAS_WEBHOOK_URL) {
+        console.log('📧 GAS WebHook 未設定のためメール送信スキップ');
         return false;
     }
 
     try {
-        // EmailJS はグローバル変数として読み込まれている
-        if (typeof emailjs === 'undefined') {
-            console.warn('📧 EmailJS SDK が読み込まれていません');
-            return false;
-        }
-
-        emailjs.init(EMAILJS_CONFIG.publicKey);
-
         const now = new Date();
         const timeStr = `${now.getHours()}:${String(now.getMinutes()).padStart(2, '0')}`;
 
-        await emailjs.send(EMAILJS_CONFIG.serviceId, EMAILJS_CONFIG.templateId, {
-            to_email: EMAILJS_CONFIG.parentEmail,
+        const payload = {
             article_title: headline,
             article_date: date,
-            answered_time: timeStr,
+            answered_time: timeStr
+        };
+
+        const response = await fetch(GAS_WEBHOOK_URL, {
+            method: 'POST',
+            // CORS回避のため、GASへは 'application/x-www-form-urlencoded' または 'text/plain' を使うことが多い
+            // 今回はJSONを文字列化して送るシンプルな方法を使用
+            body: JSON.stringify(payload)
         });
 
-        console.log('📧 メール送信成功');
-        return true;
+        // 成功時には JSON形式で {"status": "success"} などが返ることを想定
+        const result = await response.json();
+
+        if (result.status === 'success') {
+            console.log('📧 メール送信・完了記録成功');
+            return true;
+        } else {
+            console.warn('📧 GAS側からエラーが返されました', result);
+            return false;
+        }
     } catch (err) {
         console.warn('📧 メール送信失敗:', err);
         return false;
