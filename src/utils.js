@@ -110,7 +110,8 @@ async function sendQuizNotification(headline, date) {
         const payload = {
             article_title: headline,
             article_date: date,
-            answered_time: timeStr
+            answered_time: timeStr,
+            article_url: window.location.href
         };
 
         const response = await fetch(GAS_WEBHOOK_URL, {

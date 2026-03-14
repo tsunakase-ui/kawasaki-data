@@ -32,6 +32,7 @@ function doPost(e) {
     const articleTitle = data.article_title || "不明な記事";
     const articleDate = data.article_date || "";
     const answeredTime = data.answered_time || "";
+    const articleUrl = data.article_url || "";
     
     // スクリプトプロパティ（保存領域）に「今日学習完了した」というフラグを立てる
     const props = PropertiesService.getScriptProperties();
@@ -47,6 +48,7 @@ function doPost(e) {
 - 記事: ${articleTitle}
 - 日付: ${articleDate}
 - 正解時刻: ${answeredTime}
+- 記事URL: ${articleUrl}
 
 今日もよく頑張りました！褒めてあげてください😊
     `.trim();
