@@ -14,13 +14,23 @@ export function getSystemPrompt() {
 1. **結論ファースト**: テーマ解説は必ず「オチ」から始めてください。「実は〜だった」「意外にも〜」のように、読者が「なぜ？」と思う書き出しにしてください。
 2. **箇条書き禁止**: 箇条書きの羅列は禁止です。文章で説明してください。
 3. **ボトムアップ記述禁止**: 「まず〜、次に〜、そして〜」のような順序立てた長文は禁止です。結論→理由→背景の順（トップダウン）で記述してください。
-4. **データの正確性**: 川崎市に関するデータは、実際の統計データに基づいてください。不確かな場合は「約」「およそ」をつけてください。
+4. **データの正確性**: 川崎市に関するデータは、渡された統計データを最優先で使用してください。不確かな場合は「約」「およそ」をつけてください。
 5. **文字数**: 全体で800〜1200字程度にしてください。
 6. **漢字**: 小学6年生が読める漢字を使い、難しい漢字にはふりがなをつけてください。
 7. **会話**: 必ず3人（小学生2人と先生1人）で3ターン以上の会話にしてください。会話は自然で、疑問→気づき→深堀りの流れにしてください。
-8. **クイズ**: 適性検査を意識した問題にしてください。単純な知識問題ではなく、データの読み取りや因果関係の理解を問う問題にしてください。選択肢は5つで、もっともらしい誤答を含めてください。
-9. **用語解説**: 小学生にとって難しい専門用語（例: BOD値、生産年齢人口など）が記事中に出てくる場合は、必ず glossary に含めてください。
-10. **出典**: 参考にした情報源がある場合は sources に含めてください。`;
+8. **用語解説**: 小学生にとって難しい専門用語が記事中に出てくる場合は、必ず glossary に含めてください。
+9. **出典**: 参考にした情報源がある場合は sources に含めてください。
+
+## グラフ・問題に関する絶対ルール
+
+10. **charts必須**: chartsは必ず1〜2個生成し、渡された統計データの実際の数値を使うこと。数値を変えてはいけません。
+11. **exercises必須**: exercisesは必ず3問構成とし、single・multiple・essayを各1問含めること。
+12. **グラフ紐づけ**: 各exerciseのchartRefは必ず対応するグラフのidを設定すること。
+13. **消去法禁止**: 選択肢はすべて「一見もっともらしく」作ること。「明らかに間違い」な選択肢は禁止。
+14. **single形式**: 必ず「〔グラフX〕から読み取れないものはどれですか？」という形式にすること。
+15. **multiple形式**: 必ず「〔グラフX〕から読み取れることをすべて選びましょう。」という形式にすること。正解は2〜3個にすること。
+16. **essay形式**: 「〇〇なので、」で書き出す50字以内の記述形式にすること。
+17. **explanation品質**: explanationには「グラフの〇〇年のデータを見ると〜（具体的な数値）」という根拠を必ず含めること。`;
 }
 
 /**
@@ -28,8 +38,9 @@ export function getSystemPrompt() {
  * @param {Object} theme - テーマ情報
  * @param {Array} scrapedData - スクレイピング結果
  * @param {Array<{date: string, headline: string, topic: string}>} pastArticles - 過去の記事一覧
+ * @param {Array} datasets - 統計データセット
  */
-export function getGenerationPrompt(theme, scrapedData, pastArticles = []) {
+export function getGenerationPrompt(theme, scrapedData, pastArticles = [], datasets = []) {
   const scrapedContext = scrapedData.length > 0
     ? `\n\n## 参考情報（スクレイピング結果）\n${scrapedData.map(d => `### ${d.source} (${d.url})\nページタイトル: ${d.title || '不明'}\n${d.content}`).join('\n\n')}`
     : '';
@@ -38,12 +49,16 @@ export function getGenerationPrompt(theme, scrapedData, pastArticles = []) {
     ? `\n\n## 過去の記事（以下と内容・切り口が被らないようにしてください）\n${pastArticles.slice(0, 7).map(a => `- ${a.date}: ${a.headline}（${a.topic}）`).join('\n')}`
     : '';
 
+  const datasetContext = datasets.length > 0
+    ? `\n\n## 統計データ（chartsとexercisesの数値はここから取ること。数値を変えてはいけない）\n${datasets.map(d => JSON.stringify(d, null, 2)).join('\n\n')}`
+    : '';
+
   return `以下のテーマについて「日刊 こども川崎市新聞」の記事を生成してください。
 
 ## テーマ
 - カテゴリ: ${theme.category}
 - トピック: ${theme.topic}
-${scrapedContext}${pastContext}
+${scrapedContext}${pastContext}${datasetContext}
 
 ## 出力形式
 
@@ -55,16 +70,16 @@ ${scrapedContext}${pastContext}
     "category": "${theme.category}",
     "topic": "${theme.topic}",
     "headline": "（子供の興味を引く、結論を含んだ見出し。30文字程度）",
-    "imageQuery": "（テーマに関連する英語の画像検索キーワード。Unsplash検索用。例: 'kawasaki city library books'）"
+    "imageQuery": "（テーマに関連する英語の画像検索キーワード。Unsplash検索用）"
   },
   "sections": {
     "topStory": {
       "conclusion": "（テーマの結論を1〜2文で。オチから言う）",
-      "body": "（結論の背景や理由を説明。複数段落可。段落の区切りは改行(\\\\n\\\\n)で。200〜400文字程度）",
+      "body": "（結論の背景や理由を説明。200〜400文字程度）",
       "keyPoint": "（このテーマで覚えてほしい一文）"
     },
     "conceptMap": {
-      "mermaidCode": "（Mermaid.js の graph TD 形式。ノード名は日本語。ノードラベルにカッコや特殊文字を含む場合は必ずダブルクォートで囲んでください。例: A[\\\\"ラベル(補足)\\\\"]。7〜12ノード程度）",
+      "mermaidCode": "（Mermaid.js の graph TD 形式。7〜12ノード程度）",
       "description": "（マップの読み方を1〜2文で）"
     },
     "dataInsight": {
@@ -83,33 +98,86 @@ ${scrapedContext}${pastContext}
         { "speaker": "（名前）", "text": "（セリフ）" }
       ]
     },
+    "charts": [
+      {
+        "id": "chart1",
+        "type": "line",
+        "title": "（グラフのタイトル）",
+        "source": "（データ出典）",
+        "xLabel": "（横軸ラベル。例: 年度）",
+        "datasets": [
+          {
+            "label": "（系列名と単位。例: ごみ総排出量（万トン））",
+            "data": [{"x": "2015", "y": 58.2}],
+            "yAxisId": "left"
+          }
+        ]
+      }
+    ],
+    "exercises": [
+      {
+        "type": "single",
+        "question": "〔グラフ1〕から読み取れないものはどれですか？",
+        "chartRef": "chart1",
+        "choices": [
+          {"id": "A", "text": "（選択肢）"},
+          {"id": "B", "text": "（選択肢）"},
+          {"id": "C", "text": "（選択肢）"},
+          {"id": "D", "text": "（選択肢）"},
+          {"id": "E", "text": "（選択肢）"}
+        ],
+        "correctAnswers": ["C"],
+        "explanation": "（具体的な数値を示した解説）"
+      },
+      {
+        "type": "multiple",
+        "question": "〔グラフ1〕から読み取れることをすべて選びましょう。",
+        "chartRef": "chart1",
+        "choices": [
+          {"id": "A", "text": "（選択肢）"},
+          {"id": "B", "text": "（選択肢）"},
+          {"id": "C", "text": "（選択肢）"},
+          {"id": "D", "text": "（選択肢）"},
+          {"id": "E", "text": "（選択肢）"}
+        ],
+        "correctAnswers": ["A", "C"],
+        "explanation": "（具体的な数値を示した解説）"
+      },
+      {
+        "type": "essay",
+        "question": "「（〇〇という課題があるので、）」に続くように50字以内で書きましょう。",
+        "chartRef": "chart1",
+        "maxLength": 50,
+        "modelAnswer": "（模範解答）",
+        "explanation": "（採点ポイントの解説）"
+      }
+    ],
     "quiz": {
-      "question": "（問題文）",
+      "question": "（後方互換用。exercisesのsingle問題と同じ内容でよい）",
       "choices": [
-        { "id": "A", "text": "（選択肢）" },
-        { "id": "B", "text": "（選択肢）" },
-        { "id": "C", "text": "（選択肢）" },
-        { "id": "D", "text": "（選択肢）" },
-        { "id": "E", "text": "（選択肢）" }
+        {"id": "A", "text": "（選択肢）"},
+        {"id": "B", "text": "（選択肢）"},
+        {"id": "C", "text": "（選択肢）"},
+        {"id": "D", "text": "（選択肢）"},
+        {"id": "E", "text": "（選択肢）"}
       ],
-      "correctAnswer": "（A〜Eのいずれか）",
-      "explanation": "（正解の解説。なぜその答えが正しいのか、他の選択肢はなぜ間違いなのか。適性検査の解法ポイントも含む）"
+      "correctAnswer": "（A〜E）",
+      "explanation": "（解説）"
     }
   },
   "sources": [
-    { "title": "（ページタイトルや情報源名）", "url": "（URLがあれば。なければ空文字列）" }
+    { "title": "（情報源名）", "url": "（URLがあれば）" }
   ],
   "glossary": [
-    { "term": "（用語）", "reading": "（ひらがな読み）", "definition": "（小学生にもわかる30字程度の解説）" }
+    { "term": "（用語）", "reading": "（ひらがな）", "definition": "（30字程度の解説）" }
   ]
 }
 \`\`\`
 
 **重要**:
-- Mermaid のノードラベルに括弧()や特殊文字を含む場合は必ずダブルクォートで囲んでください
-- dialog の turns は最低6ターン（疑問→驚き→先生の問いかけ→考察→深掘り→まとめ）
-- facts は3〜5個
-- sources は参考情報やスクレイピング元を記載（最低1件）
-- glossary は記事中の難しい用語を3〜6個（なければ空配列）
-- JSONとして正しい形式で出力してください`;
+- chartsのデータ数値は渡された統計データの値をそのまま使うこと
+- exercisesはsingle・multiple・essayを必ず各1問含めること
+- explanationには具体的な数値（年度と値）を示すこと
+- Mermaid のノードラベルに括弧()や特殊文字を含む場合は必ずダブルクォートで囲む
+- JSONとして正しい形式で出力すること`;
 }
