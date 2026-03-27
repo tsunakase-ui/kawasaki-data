@@ -898,3 +898,182 @@ body {
     font-size: 1.4rem;
   }
 }
+
+/* ===== Chart Section ===== */
+.charts-container {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.chart-wrapper {
+    background: #fff;
+    border-radius: 12px;
+    padding: 1.25rem;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.08);
+}
+
+.chart-title {
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: #1a1a2e;
+    margin: 0 0 0.75rem;
+}
+
+.chart-source {
+    font-size: 0.75rem;
+    color: #888;
+    margin: 0.5rem 0 0;
+    text-align: right;
+}
+
+/* ===== Exercises Section ===== */
+.exercises-container {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.exercise-block {
+    background: #f8f9ff;
+    border-radius: 12px;
+    padding: 1.25rem;
+    border-left: 4px solid #1a73e8;
+}
+
+.exercise-header {
+    font-size: 0.8rem;
+    color: #1a73e8;
+    font-weight: 700;
+    margin: 0 0 0.5rem;
+}
+
+.exercise-question {
+    font-weight: 700;
+    font-size: 1rem;
+    color: #1a1a2e;
+    margin: 0 0 1rem;
+    line-height: 1.6;
+}
+
+.exercise-choices {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.exercise-choice-label {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    padding: 0.6rem 0.8rem;
+    border-radius: 8px;
+    background: #fff;
+    cursor: pointer;
+    border: 1.5px solid #e0e0e0;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    transition: border-color 0.15s;
+}
+
+.exercise-choice-label:hover {
+    border-color: #1a73e8;
+}
+
+.exercise-choice-label.choice-correct {
+    border-color: #188038;
+    background: #e6f4ea;
+    color: #188038;
+    font-weight: 700;
+}
+
+.exercise-choice-label.choice-incorrect {
+    border-color: #c5221f;
+    background: #fce8e6;
+    color: #c5221f;
+}
+
+.exercise-choice-input {
+    flex-shrink: 0;
+    margin-top: 3px;
+}
+
+.exercise-essay-input {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1.5px solid #e0e0e0;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 0.95rem;
+    resize: vertical;
+    box-sizing: border-box;
+    margin-bottom: 0.25rem;
+}
+
+.essay-counter {
+    text-align: right;
+    font-size: 0.75rem;
+    color: #888;
+    margin: 0 0 0.75rem;
+}
+
+.exercise-answer-btn {
+    background: #1a73e8;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 0.6rem 1.5rem;
+    font-size: 0.9rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.exercise-answer-btn:hover {
+    background: #1557b0;
+}
+
+.exercise-result {
+    margin-top: 1rem;
+    padding: 1rem;
+    border-radius: 8px;
+    background: #f1f3f4;
+}
+
+.exercise-result.correct {
+    background: #e6f4ea;
+    border: 1.5px solid #188038;
+}
+
+.exercise-result.incorrect {
+    background: #fce8e6;
+    border: 1.5px solid #c5221f;
+}
+
+.exercise-result-icon {
+    font-weight: 700;
+    margin: 0 0 0.5rem;
+}
+
+.exercise-explanation {
+    font-size: 0.9rem;
+    color: #444;
+    line-height: 1.6;
+    margin: 0.5rem 0 0;
+}
+
+.exercise-result-label {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #555;
+    margin: 0 0 0.4rem;
+}
+
+.exercise-model-answer {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #188038;
+    margin: 0 0 0.5rem;
+    line-height: 1.6;
+}

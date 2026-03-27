@@ -95,6 +95,235 @@ export async function renderMermaid(containerId, mermaidCode) {
 }
 
 /**
+ * Chart.js でグラフを描画
+ * @param {Array} charts - article.sections.charts
+ */
+export async function renderCharts(charts) {
+    if (!charts || charts.length === 0) return;
+
+    const section = document.getElementById('charts-section');
+    const container = document.getElementById('charts-container');
+    if (!section || !container) return;
+
+    section.hidden = false;
+    container.innerHTML = '';
+
+    const { Chart, registerables } = await import('chart.js');
+    Chart.register(...registerables);
+
+    const colors = ['#1a73e8', '#e8710a', '#188038', '#a50e0e', '#7b1fa2'];
+
+    for (const chartDef of charts) {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'chart-wrapper';
+
+        const title = document.createElement('p');
+        title.className = 'chart-title';
+        title.textContent = chartDef.title;
+        wrapper.appendChild(title);
+
+        const canvas = document.createElement('canvas');
+        canvas.id = `canvas-${chartDef.id}`;
+        wrapper.appendChild(canvas);
+
+        if (chartDef.source) {
+            const src = document.createElement('p');
+            src.className = 'chart-source';
+            src.textContent = `出典: ${chartDef.source}`;
+            wrapper.appendChild(src);
+        }
+
+        container.appendChild(wrapper);
+
+        const hasRightAxis = chartDef.datasets.some(d => d.yAxisId === 'right');
+
+        const chartData = {
+            labels: chartDef.datasets[0].data.map(p => p.x),
+            datasets: chartDef.datasets.map((ds, i) => ({
+                label: ds.label,
+                data: ds.data.map(p => p.y),
+                borderColor: colors[i % colors.length],
+                backgroundColor: colors[i % colors.length] + '22',
+                yAxisID: ds.yAxisId || 'left',
+                tension: 0.3,
+                fill: false,
+            })),
+        };
+
+        const scales = {
+            x: { title: { display: !!chartDef.xLabel, text: chartDef.xLabel || '' } },
+            left: {
+                position: 'left',
+                title: {
+                    display: true,
+                    text: chartDef.datasets.find(d => !d.yAxisId || d.yAxisId === 'left')?.label || '',
+                },
+            },
+        };
+        if (hasRightAxis) {
+            scales.right = {
+                position: 'right',
+                grid: { drawOnChartArea: false },
+                title: {
+                    display: true,
+                    text: chartDef.datasets.find(d => d.yAxisId === 'right')?.label || '',
+                },
+            };
+        }
+
+        new Chart(canvas, {
+            type: chartDef.type === 'stacked-bar' ? 'bar' : (chartDef.type || 'line'),
+            data: chartData,
+            options: {
+                responsive: true,
+                plugins: { legend: { position: 'bottom' } },
+                scales,
+                ...(chartDef.type === 'stacked-bar' ? {
+                    scales: { ...scales, x: { stacked: true }, left: { stacked: true } }
+                } : {}),
+            },
+        });
+    }
+}
+
+/**
+ * exercises セクションを描画（単択・複択・記述）
+ * @param {Array} exercises - article.sections.exercises
+ * @param {string} headline - 記事見出し（GAS通知用）
+ * @param {string} date - 記事日付（GAS通知用）
+ */
+export function renderExercises(exercises, headline, date) {
+    const container = document.getElementById('exercises-container');
+    if (!container || !exercises || exercises.length === 0) return;
+
+    container.innerHTML = '';
+
+    exercises.forEach((ex, idx) => {
+        const block = document.createElement('div');
+        block.className = 'exercise-block';
+
+        const header = document.createElement('p');
+        header.className = 'exercise-header';
+        const refs = ex.chartRef
+            ? (Array.isArray(ex.chartRef) ? ex.chartRef : [ex.chartRef])
+            : [];
+        header.textContent = `問題${idx + 1}` + (refs.length > 0 ? `（${refs.map(r => `〔${r}〕`).join('')}を見て答えましょう）` : '');
+        block.appendChild(header);
+
+        const question = document.createElement('p');
+        question.className = 'exercise-question';
+        question.textContent = ex.question;
+        block.appendChild(question);
+
+        if (ex.type === 'essay') {
+            const textarea = document.createElement('textarea');
+            textarea.className = 'exercise-essay-input';
+            textarea.maxLength = ex.maxLength || 100;
+            textarea.placeholder = `${ex.maxLength || 50}字以内で書きましょう`;
+            textarea.rows = 3;
+            block.appendChild(textarea);
+
+            const counter = document.createElement('p');
+            counter.className = 'essay-counter';
+            counter.textContent = `0 / ${ex.maxLength || 50}字`;
+            textarea.addEventListener('input', () => {
+                counter.textContent = `${textarea.value.length} / ${ex.maxLength || 50}字`;
+            });
+            block.appendChild(counter);
+
+            const btn = createAnswerButton();
+            block.appendChild(btn);
+
+            const resultDiv = createExerciseResultDiv();
+            block.appendChild(resultDiv);
+
+            btn.addEventListener('click', () => {
+                resultDiv.hidden = false;
+                resultDiv.innerHTML = `
+                    <p class="exercise-result-label">模範解答</p>
+                    <p class="exercise-model-answer">${ex.modelAnswer || ''}</p>
+                    <p class="exercise-explanation">${ex.explanation || ''}</p>
+                `;
+            });
+
+        } else {
+            const isMultiple = ex.type === 'multiple';
+            const choicesDiv = document.createElement('div');
+            choicesDiv.className = 'exercise-choices';
+
+            (ex.choices || []).forEach(choice => {
+                const label = document.createElement('label');
+                label.className = 'exercise-choice-label';
+
+                const input = document.createElement('input');
+                input.type = isMultiple ? 'checkbox' : 'radio';
+                input.name = `ex-${idx}`;
+                input.value = choice.id;
+                input.className = 'exercise-choice-input';
+
+                label.appendChild(input);
+                label.appendChild(document.createTextNode(` ${choice.id}: ${choice.text}`));
+                choicesDiv.appendChild(label);
+            });
+
+            block.appendChild(choicesDiv);
+
+            const btn = createAnswerButton();
+            block.appendChild(btn);
+
+            const resultDiv = createExerciseResultDiv();
+            block.appendChild(resultDiv);
+
+            btn.addEventListener('click', async () => {
+                const selected = [...choicesDiv.querySelectorAll('input:checked')].map(i => i.value);
+                const correct = ex.correctAnswers || [];
+                const isCorrect = selected.length === correct.length &&
+                    selected.every(s => correct.includes(s)) &&
+                    correct.every(c => selected.includes(c));
+
+                choicesDiv.querySelectorAll('input').forEach(input => {
+                    input.disabled = true;
+                    const lbl = input.parentElement;
+                    if (correct.includes(input.value)) {
+                        lbl.classList.add('choice-correct');
+                    } else if (selected.includes(input.value) && !correct.includes(input.value)) {
+                        lbl.classList.add('choice-incorrect');
+                    }
+                });
+
+                resultDiv.hidden = false;
+                resultDiv.innerHTML = `
+                    <p class="exercise-result-icon">${isCorrect ? '🎉 せいかい！' : `🤔 正解は ${correct.join('・')} でした`}</p>
+                    <p class="exercise-explanation">${ex.explanation || ''}</p>
+                `;
+                resultDiv.classList.toggle('correct', isCorrect);
+                resultDiv.classList.toggle('incorrect', !isCorrect);
+
+                if (isCorrect && idx === exercises.length - 1) {
+                    await sendQuizNotification(headline, date);
+                }
+            });
+        }
+
+        container.appendChild(block);
+    });
+}
+
+function createAnswerButton() {
+    const btn = document.createElement('button');
+    btn.className = 'exercise-answer-btn';
+    btn.textContent = '答えを確認する';
+    return btn;
+}
+
+function createExerciseResultDiv() {
+    const div = document.createElement('div');
+    div.className = 'exercise-result';
+    div.hidden = true;
+    return div;
+}
+
+/**
  * メール送信 (GAS Webアプリ)
  */
 async function sendQuizNotification(headline, date) {
@@ -204,67 +433,82 @@ export function renderArticle(data) {
         })
         .join('');
 
-    // クイズ
-    const quiz = sections.quiz;
-    document.getElementById('quiz-question').textContent = quiz.question;
-    const choicesContainer = document.getElementById('quiz-choices');
-    choicesContainer.innerHTML = quiz.choices
-        .map(c => `
+    // クイズ（exercisesがない場合のフォールバック）
+    if (!sections.exercises || sections.exercises.length === 0) {
+        const fallback = document.getElementById('quiz-fallback');
+        if (fallback) fallback.hidden = false;
+
+        const quiz = sections.quiz;
+        document.getElementById('quiz-question').textContent = quiz.question;
+        const choicesContainer = document.getElementById('quiz-choices');
+        choicesContainer.innerHTML = quiz.choices
+            .map(c => `
       <button class="quiz-choice" data-id="${c.id}" id="quiz-choice-${c.id}">
         <span class="quiz-choice-id">${c.id}</span>
         <span class="quiz-choice-text">${c.text}</span>
       </button>
     `)
-        .join('');
+            .join('');
 
-    // クイズのインタラクション
-    let answered = false;
-    choicesContainer.querySelectorAll('.quiz-choice').forEach(btn => {
-        btn.addEventListener('click', async () => {
-            if (answered) return;
-            answered = true;
+        // クイズのインタラクション
+        let answered = false;
+        choicesContainer.querySelectorAll('.quiz-choice').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                if (answered) return;
+                answered = true;
 
-            const selectedId = btn.dataset.id;
-            const isCorrect = selectedId === quiz.correctAnswer;
+                const selectedId = btn.dataset.id;
+                const isCorrect = selectedId === quiz.correctAnswer;
 
-            // 全選択肢を無効化
-            choicesContainer.querySelectorAll('.quiz-choice').forEach(b => {
-                b.classList.add('disabled');
-                if (b.dataset.id === quiz.correctAnswer) {
-                    b.classList.add('correct');
-                } else if (b.dataset.id === selectedId && !isCorrect) {
-                    b.classList.add('incorrect');
+                // 全選択肢を無効化
+                choicesContainer.querySelectorAll('.quiz-choice').forEach(b => {
+                    b.classList.add('disabled');
+                    if (b.dataset.id === quiz.correctAnswer) {
+                        b.classList.add('correct');
+                    } else if (b.dataset.id === selectedId && !isCorrect) {
+                        b.classList.add('incorrect');
+                    }
+                });
+                btn.classList.add('selected');
+
+                // 結果表示
+                const resultEl = document.getElementById('quiz-result');
+                resultEl.hidden = false;
+                resultEl.classList.add(isCorrect ? 'correct' : 'incorrect');
+                document.getElementById('quiz-result-icon').textContent = isCorrect ? '🎉' : '🤔';
+                document.getElementById('quiz-result-text').textContent = isCorrect
+                    ? 'せいかい！すごい！'
+                    : `ざんねん… 正解は ${quiz.correctAnswer} でした`;
+                document.getElementById('quiz-explanation').textContent = quiz.explanation;
+
+                // 正解時にメール通知
+                if (isCorrect) {
+                    const notifEl = document.createElement('div');
+                    notifEl.className = 'email-notification sending';
+                    notifEl.innerHTML = '<p>📧 お知らせを送信中…</p>';
+                    resultEl.after(notifEl);
+
+                    const sent = await sendQuizNotification(theme.headline, formatDate(data.date));
+                    if (sent) {
+                        notifEl.className = 'email-notification';
+                        notifEl.innerHTML = '<p>✅ がんばったことをおうちの人に送りました！</p>';
+                    } else {
+                        notifEl.remove(); // 未設定ならバナーを消す
+                    }
                 }
             });
-            btn.classList.add('selected');
-
-            // 結果表示
-            const resultEl = document.getElementById('quiz-result');
-            resultEl.hidden = false;
-            resultEl.classList.add(isCorrect ? 'correct' : 'incorrect');
-            document.getElementById('quiz-result-icon').textContent = isCorrect ? '🎉' : '🤔';
-            document.getElementById('quiz-result-text').textContent = isCorrect
-                ? 'せいかい！すごい！'
-                : `ざんねん… 正解は ${quiz.correctAnswer} でした`;
-            document.getElementById('quiz-explanation').textContent = quiz.explanation;
-
-            // 正解時にメール通知
-            if (isCorrect) {
-                const notifEl = document.createElement('div');
-                notifEl.className = 'email-notification sending';
-                notifEl.innerHTML = '<p>📧 お知らせを送信中…</p>';
-                resultEl.after(notifEl);
-
-                const sent = await sendQuizNotification(theme.headline, formatDate(data.date));
-                if (sent) {
-                    notifEl.className = 'email-notification';
-                    notifEl.innerHTML = '<p>✅ がんばったことをおうちの人に送りました！</p>';
-                } else {
-                    notifEl.remove(); // 未設定ならバナーを消す
-                }
-            }
         });
-    });
+    }
+
+    // グラフ（chart.jsで非同期描画）
+    if (sections.charts && sections.charts.length > 0) {
+        renderCharts(sections.charts);
+    }
+
+    // 問題（exercises形式が優先）
+    if (sections.exercises && sections.exercises.length > 0) {
+        renderExercises(sections.exercises, theme.headline, data.date);
+    }
 
     // 用語解説
     const glossary = data.glossary || [];

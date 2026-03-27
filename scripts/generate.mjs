@@ -15,7 +15,7 @@ import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import { selectTheme } from './themes.mjs';
+import { selectTheme, CATEGORY_DATASETS } from './themes.mjs';
 import { scrapeForTheme } from './scraper.mjs';
 import { getSystemPrompt, getGenerationPrompt } from './prompt.mjs';
 
@@ -102,6 +102,29 @@ async function fetchUnsplashImage(query) {
     }
 }
 
+// ===== データセット =====
+
+/**
+ * カテゴリに対応する静的データセットを読み込む（最大2件）
+ * @param {string} category
+ * @returns {Object[]}
+ */
+function loadDatasetsForCategory(category) {
+    const names = CATEGORY_DATASETS[category] || [];
+    const datasets = [];
+    for (const name of names.slice(0, 2)) {
+        const path = join(ROOT, 'data', `${name}.json`);
+        if (existsSync(path)) {
+            try {
+                datasets.push(JSON.parse(readFileSync(path, 'utf-8')));
+            } catch (e) {
+                console.warn(`  ⚠ データセット読み込み失敗: ${name}.json`);
+            }
+        }
+    }
+    return datasets;
+}
+
 // ===== メイン処理 =====
 
 async function main() {
@@ -137,6 +160,10 @@ async function main() {
     const scrapedData = await scrapeForTheme(theme.topic, theme.category);
     console.log(`📝 スクレイピング結果: ${scrapedData.length}件`);
 
+    // 4.5. 静的データセット読み込み
+    const datasets = loadDatasetsForCategory(theme.category);
+    console.log(`📈 データセット: ${datasets.map(d => d.title).join(', ') || 'なし'}`);
+
     // 5. Gemini API で記事生成
     console.log('🤖 Gemini API で記事を生成中...');
     const genAI = new GoogleGenerativeAI(apiKey);
@@ -150,7 +177,7 @@ async function main() {
         },
     });
 
-    const prompt = getGenerationPrompt(theme, scrapedData, pastArticles);
+    const prompt = getGenerationPrompt(theme, scrapedData, pastArticles, datasets);
 
     let article;
     let retries = 3;

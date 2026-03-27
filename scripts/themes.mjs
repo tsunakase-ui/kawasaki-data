@@ -115,3 +115,15 @@ export function selectTheme(pastTopics = [], pastArticles = []) {
     const finalPool = underrepresented.length > 0 ? underrepresented : categoryFiltered;
     return finalPool[Math.floor(Math.random() * finalPool.length)];
 }
+
+/**
+ * カテゴリに対応するデータセットファイル名のマッピング
+ * キー: THEMESのcategory値  値: data/以下のJSONファイル名（拡張子なし）の配列
+ */
+export const CATEGORY_DATASETS = {
+    '人口動態・世帯・高齢化': ['population', 'welfare'],
+    '産業・工業・貿易':       ['industry'],
+    '環境問題・公害と再生':   ['environment', 'waste', 'energy'],
+    '市民生活・行政・財政':   ['finance', 'welfare'],
+    '地理・交通':             ['traffic', 'population'],
+};
