@@ -21,22 +21,40 @@ function doPost(e) {
     const articleDate = data.article_date || "";
     const answeredTime = data.answered_time || "";
     const articleUrl = data.article_url || "";
-    
+    const answers = data.answers || [];
+
     // スクリプトプロパティ（保存領域）に「今日学習完了した」というフラグを立てる
     const props = PropertiesService.getScriptProperties();
     const todayStr = getTodayString();
     props.setProperty("COMPLETED_" + todayStr, "true");
-    
+
+    // 各問の回答サマリを組み立て
+    let answersText = "";
+    if (answers.length > 0) {
+      const lines = answers.map(function(a) {
+        if (!a) return "";
+        const typeLabel = a.type === "essay" ? "記述" : a.type === "multiple" ? "選択（複数）" : "選択（単一）";
+        const correctLabel = a.correct === null
+          ? "（自己採点）"
+          : a.correct
+            ? "→ ○"
+            : "→ ✗（正解: " + a.correctAnswer + "）";
+        return "問題" + a.number + "（" + typeLabel + "）: " + a.answer + "  " + correctLabel;
+      });
+      answersText = "\n■ 各問の回答\n" + lines.join("\n");
+    }
+
     // メールの件名と本文
-    const subject = `【学習完了！】${articleTitle} のクイズに正解しました`;
+    const subject = `【学習完了！】${articleTitle} の問題に取り組みました`;
     const body = `
-娘さんが今日のクイズに正解しました！🎉
+娘さんが今日の問題に取り組みました！🎉
 
 ■ 学習内容
 - 記事: ${articleTitle}
 - 日付: ${articleDate}
-- 正解時刻: ${answeredTime}
+- 完了時刻: ${answeredTime}
 - 記事URL: ${articleUrl}
+${answersText}
 
 今日もよく頑張りました！褒めてあげてください😊
     `.trim();

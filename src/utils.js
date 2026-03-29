@@ -197,6 +197,7 @@ export function renderExercises(exercises, headline, date) {
     if (!container || !exercises || exercises.length === 0) return;
 
     container.innerHTML = '';
+    const answers = [];
 
     exercises.forEach((ex, idx) => {
         const block = document.createElement('div');
@@ -237,13 +238,17 @@ export function renderExercises(exercises, headline, date) {
             const resultDiv = createExerciseResultDiv();
             block.appendChild(resultDiv);
 
-            btn.addEventListener('click', () => {
+            btn.addEventListener('click', async () => {
+                answers[idx] = { number: idx + 1, type: 'essay', answer: textarea.value || '（未記入）', correct: null };
                 resultDiv.hidden = false;
                 resultDiv.innerHTML = `
                     <p class="exercise-result-label">模範解答</p>
                     <p class="exercise-model-answer">${ex.modelAnswer || ''}</p>
                     <p class="exercise-explanation">${ex.explanation || ''}</p>
                 `;
+                if (idx === exercises.length - 1) {
+                    await sendQuizNotification(headline, date, answers);
+                }
             });
 
         } else {
@@ -281,6 +286,14 @@ export function renderExercises(exercises, headline, date) {
                     selected.every(s => correct.includes(s)) &&
                     correct.every(c => selected.includes(c));
 
+                answers[idx] = {
+                    number: idx + 1,
+                    type: ex.type,
+                    answer: selected.join('・') || '（未選択）',
+                    correct: isCorrect,
+                    correctAnswer: correct.join('・'),
+                };
+
                 choicesDiv.querySelectorAll('input').forEach(input => {
                     input.disabled = true;
                     const lbl = input.parentElement;
@@ -299,8 +312,8 @@ export function renderExercises(exercises, headline, date) {
                 resultDiv.classList.toggle('correct', isCorrect);
                 resultDiv.classList.toggle('incorrect', !isCorrect);
 
-                if (isCorrect && idx === exercises.length - 1) {
-                    await sendQuizNotification(headline, date);
+                if (idx === exercises.length - 1) {
+                    await sendQuizNotification(headline, date, answers);
                 }
             });
         }
@@ -326,7 +339,7 @@ function createExerciseResultDiv() {
 /**
  * メール送信 (GAS Webアプリ)
  */
-async function sendQuizNotification(headline, date) {
+async function sendQuizNotification(headline, date, answers = []) {
     if (!GAS_WEBHOOK_URL) {
         console.log('📧 GAS WebHook 未設定のためメール送信スキップ');
         return false;
@@ -340,7 +353,8 @@ async function sendQuizNotification(headline, date) {
             article_title: headline,
             article_date: date,
             answered_time: timeStr,
-            article_url: window.location.href
+            article_url: window.location.href,
+            answers: answers,
         };
 
         const response = await fetch(GAS_WEBHOOK_URL, {
