@@ -405,11 +405,34 @@ export function renderArticle(data) {
 
     // テーマ解説
     document.getElementById('top-story-conclusion').textContent = sections.topStory.conclusion;
-    document.getElementById('top-story-body').innerHTML = sections.topStory.body
+
+    const bodyEl = document.getElementById('top-story-body');
+    let bodyHtml = sections.topStory.body
         .split('\n')
         .filter(p => p.trim())
-        .map(p => `<p>${p}</p>`)
+        .map(p => {
+            if (p.startsWith('### ')) {
+                return `<h4 class="story-body-heading">${p.slice(4)}</h4>`;
+            }
+            return `<p>${p.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')}</p>`;
+        })
         .join('');
+
+    if (sections.topStory.keyPoints?.length > 0) {
+        bodyHtml += '<div class="story-keypoints">' +
+            sections.topStory.keyPoints.map(kp =>
+                `<div class="story-keypoint-item"><span class="story-keypoint-label">ここがポイント</span>${kp}</div>`
+            ).join('') +
+            '</div>';
+    }
+
+    if (sections.topStory.rememberThese?.length > 0) {
+        bodyHtml += '<div class="story-remember"><p class="story-remember-title">📝 これを覚えておこう</p><ul>' +
+            sections.topStory.rememberThese.map(r => `<li>${r}</li>`).join('') +
+            '</ul></div>';
+    }
+
+    bodyEl.innerHTML = bodyHtml;
     document.getElementById('top-story-keypoint').textContent = sections.topStory.keyPoint;
 
     // 概念マップ

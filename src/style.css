@@ -411,6 +411,83 @@ body {
   flex-shrink: 0;
 }
 
+.story-body-heading {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: var(--section-story-color);
+  margin: var(--space-lg) 0 var(--space-xs);
+  border-bottom: 2px solid var(--section-story-bg);
+  padding-bottom: var(--space-xs);
+}
+
+.story-keypoints {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  margin: var(--space-md) 0;
+}
+
+.story-keypoint-item {
+  background: linear-gradient(135deg, #fff8e1, #fff3cd);
+  border-left: 4px solid #f9a825;
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+  padding: var(--space-sm) var(--space-md);
+  font-size: 0.9rem;
+  line-height: 1.7;
+  color: var(--color-text);
+}
+
+.story-keypoint-label {
+  display: inline-block;
+  background: #f9a825;
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  margin-right: var(--space-sm);
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.story-remember {
+  background: linear-gradient(135deg, #e8f5e9, #f1f8e9);
+  border-radius: var(--radius-md);
+  padding: var(--space-md) var(--space-lg);
+  margin: var(--space-md) 0;
+}
+
+.story-remember-title {
+  font-size: 0.9rem;
+  font-weight: 800;
+  color: #2e7d32;
+  margin-bottom: var(--space-sm);
+}
+
+.story-remember ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.story-remember li {
+  font-size: 0.9rem;
+  line-height: 1.7;
+  color: var(--color-text);
+  padding-left: var(--space-md);
+  position: relative;
+}
+
+.story-remember li::before {
+  content: '✅';
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+
 /* --- Concept Map --- */
 .mermaid-container {
   background: white;
