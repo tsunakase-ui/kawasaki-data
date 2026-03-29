@@ -200,6 +200,20 @@ async function main() {
 
             const generated = JSON.parse(jsonStr);
 
+            // 新フォーマット必須フィールドのバリデーション
+            const charts = generated.sections?.charts;
+            const exercises = generated.sections?.exercises;
+            if (!Array.isArray(charts) || charts.length === 0) {
+                throw new Error('生成記事に charts がありません（旧フォーマット）');
+            }
+            if (!Array.isArray(exercises) || exercises.length < 3) {
+                throw new Error('生成記事の exercises が不足しています（旧フォーマット）');
+            }
+            const exerciseTypes = exercises.map(e => e.type);
+            if (!exerciseTypes.includes('single') || !exerciseTypes.includes('multiple') || !exerciseTypes.includes('essay')) {
+                throw new Error(`exercises に必須タイプが不足しています: ${exerciseTypes.join(', ')}`);
+            }
+
             // Unsplash で画像取得
             let heroImage = null;
             const imageQuery = generated.theme?.imageQuery;

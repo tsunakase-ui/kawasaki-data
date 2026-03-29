@@ -98,7 +98,16 @@
         </div>
       </section>
 
-      <!-- セクション4: 会話 -->
+      <!-- セクション4: データグラフ -->
+      <section id="charts-section" class="section section-charts" hidden>
+        <div class="section-header">
+          <span class="section-icon">📈</span>
+          <h3 class="section-title">データグラフ</h3>
+        </div>
+        <div id="charts-container" class="charts-container"></div>
+      </section>
+
+      <!-- セクション5: 会話 -->
       <section class="section section-dialogue">
         <div class="section-header">
           <span class="section-icon">💬</span>
@@ -107,13 +116,16 @@
         <div id="dialogue-container" class="dialogue-container"></div>
       </section>
 
-      <!-- セクション5: クイズ -->
+      <!-- セクション6: チャレンジ問題 -->
       <section class="section section-quiz">
         <div class="section-header">
           <span class="section-icon">✏️</span>
           <h3 class="section-title">チャレンジ問題</h3>
         </div>
-        <div class="section-body">
+        <!-- exercises形式（新） -->
+        <div id="exercises-container" class="exercises-container"></div>
+        <!-- quiz形式（旧記事用フォールバック） -->
+        <div id="quiz-fallback" class="section-body" hidden>
           <p id="quiz-question" class="quiz-question"></p>
           <div id="quiz-choices" class="quiz-choices"></div>
           <div id="quiz-result" class="quiz-result" hidden>
