@@ -172,7 +172,7 @@ async function main() {
         generationConfig: {
             temperature: 0.8,
             topP: 0.95,
-            maxOutputTokens: 8192,
+            maxOutputTokens: 32768,
             responseMimeType: 'application/json',
         },
     });
